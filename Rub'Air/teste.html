@@ -1,0 +1,209 @@
+<?php
+session_start();
+ include('bd/connexionDB.php');
+
+ if (isset($_SESSION['id'])){
+     header('Location: index.php');
+      exit;
+
+
+      if(!empty($_POST)){
+           extract($_POST);
+           $valid = true; 
+
+           if (isset($_POST['inscription'])){
+               $nom = htmlentities(trim($nom)); // On récupère le nom
+               $prenom = htmlentities(trim($prenom)); // on récupère le prénom
+               $mail = htmlentities(strtolower(trim($mail))); // On récupère le mail
+               $mdp = trim($mdp); // On récupère le mot de passe 
+               $confmdp = trim($confmdp);    
+
+
+
+            if(empty($nom)){
+               $valid = false;
+               $er_nom = ("Le nom d' utilisateur ne peut pas être vide");
+            }
+    
+               //  Vérification du prénom
+            if(empty($prenom)){
+               $valid = false;
+               $er_prenom = ("Le prenom d' utilisateur ne peut pas être vide");
+            }
+    
+               // Vérification du mail
+            if(empty($mail)){
+              $valid = false;
+              $er_mail = "Le mail ne peut pas être vide";
+    
+                   // On vérifit que le mail est dans le bon format
+               }elseif(!preg_match("/^[a-z0-9\-_.]+@[a-z]+\.[a-z]{2,3}$/i", $mail)){
+                    $valid = false;
+                    $er_mail = "Le mail n'est pas valide";
+    
+               }else{
+                   // On vérifit que le mail est disponible
+               $req_mail = $DB->query("SELECT mail FROM utilisateur WHERE mail = ?",
+                     array($mail));
+    
+               $req_mail = $req_mail->fetch();
+    
+               if ($req_mail['mail'] <> ""){
+                        $valid = false;
+                        $er_mail = "Ce mail existe déjà";
+                  }
+               }
+    
+               // Vérification du mot de passe
+               if(empty($mdp)) {
+                   $valid = false;
+                   $er_mdp = "Le mot de passe ne peut pas être vide";
+    
+                 }elseif($mdp != $confmdp){
+                   $valid = false;
+                   $er_mdp = "La confirmation du mot de passe ne correspond pas";
+               }
+    
+               // Si toutes les conditions sont remplies alors on fait le traitement
+               if($valid){
+    
+                   $mdp = crypt($mdp, "$6$rounds=5000$macleapersonnaliseretagardersecret$");
+                   $date_creation_compte = date('Y-m-d H:i:s');
+    
+                   // On insert nos données dans la table utilisateur
+                   $DB->insert("INSERT INTO utilisateur (nom, prenom, mail, mdp, date_creation_compte) VALUES
+                       (?, ?, ?, ?, ?)",
+                        array($nom, $prenom, $mail, $mdp, $date_creation_compte));
+    
+                   header('Location: index.php');
+                   exit;
+               }
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="Inscription.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+   <?php 
+   require_once('_menu/menu.php');
+   ?>
+<div align="center">
+         <h2>Inscription</h2>
+         <br /><br />
+         <form method="POST" action="">
+            <table>
+               <tr>
+                  <td align="right">
+                     <label for="pseudo"><b>Pseudo :</b></label>
+                  </td>
+                  <td>
+                     <input type="text" placeholder="Votre pseudo" id="pseudo" name="pseudo" value="<?php if(isset($pseudo)) { echo $pseudo; } ?>" />
+                  </td>
+               </tr>
+               <tr>
+                  <td align="right">
+                     <label for="mail"><b>Mail :</b></label>
+                  </td>
+                  <td>
+                     <input type="email" placeholder="Votre mail" id="mail" name="mail" value="<?php if(isset($mail)) { echo $mail; } ?>" />
+                  </td>
+               </tr>
+               <tr>
+                  <td align="right">
+                     <label for="mail2"><b>Confirmation du mail :</b></label>
+                  </td>
+                  <td>
+                     <input type="email" placeholder="Confirmez votre mail" id="mail2" name="mail2" value="<?php if(isset($mail2)) { echo $mail2; } ?>" />
+                  </td>
+               </tr>
+               <tr>
+                  <td align="right">
+                     <label for="mdp"><b>Mot de passe :</b></label>
+                  </td>
+                  <td>
+                     <input type="password" placeholder="Votre mot de passe" id="mdp" name="mdp" />
+                  </td>
+               </tr>
+               <tr>
+                  <td align="right">
+                     <label for="mdp2"><b>Confirmation du mot de passe :</b></label>
+                  </td>
+                  <td>
+                     <input type="password" placeholder="Confirmez votre mdp" id="mdp2" name="mdp2" />
+                  </td>
+               </tr>
+               <tr>
+                  <td></td>
+                  <td align="center">
+                     <br />
+                     <input type="submit" name="forminscription" value="Je m'inscris" />
+                  </td>
+               </tr>
+            </table>
+         </form>
+         <?php
+         if(isset($erreur)) {
+            echo '<font color="red">'.$erreur."</font>";
+         }
+         ?>
+</body>
+</html>
+
+
+
+parti 3
+
+body {
+    background: url("images/img1.jpg");
+    background-position: bottom;
+    background-size: cover;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  #container {
+    width: 400px;
+    padding: 20px;
+    border: 1px solid #29d9d5;
+    background-color: rgba(34, 34, 34, 0.773);
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+  }
+  
+  #container h1 {
+    text-align: center;
+    color: #29d9d5;
+  }
+  
+  form {
+    margin-top: 20px;
+  }
+  
+  /* Reste du CSS pour les éléments du formulaire */
+  
+  
+  /* Reste du CSS pour les éléments du formulaire */
+  
+
+#container h1 {
+    width: 38%;
+    margin: 0 auto;
+    padding-bottom: 10px;
+}
+
+input[type=text],
+input[type=password] {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+}
